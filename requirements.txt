@@ -1,0 +1,7 @@
+mysql
+mysql.connector
+psycopg2
+datetime
+httplib2
+lxml
+requests
