@@ -1,7 +1,15 @@
-import re, collections
+import collections
+import os
+import re
+
+import requests as requests
 from lxml import etree
 
-element = etree.parse('input.xml')
+url = 'https://www.thaiproperty.com/xmlfeed_hipflat'
+r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+with open('data.xml', 'w') as f:
+    f.write(r.text)
+element = etree.parse('data.xml')
 nice_tree = collections.OrderedDict()
 
 for tag in element.iter():
@@ -12,7 +20,7 @@ for tag in element.iter():
         nice_tree[path].extend(attrib for attrib in tag.keys() if attrib not in nice_tree[path])
 
 allTags = collections.OrderedDict()
-initialTag = 'property/'
+initialTag = 'item'
 
 for path, attribs in nice_tree.items():
     finalPath = path.split(initialTag)
@@ -49,8 +57,10 @@ for tag, attr in xmlTagsAttr.items():
     if len(attr) > 0:
         results_union = set().union(*attr)
         for a in results_union:
-            mapper = '`xml:"property>{}>{}, attr"`'.format(tag, a)
+            mapper = '{}    string      `xml:"' + initialTag + '{}>{}, attr"`'.format(tag, tag, a)
             print(mapper)
     else:
-        mapper = '`xml:"property>{}"`'.format(tag)
+        mapper = '{}    string      `xml:"' + initialTag + '{}"`'.format(tag, tag)
         print(mapper)
+
+os.remove('data.xml')
