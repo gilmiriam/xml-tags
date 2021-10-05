@@ -59,17 +59,15 @@ def processor():
 
 
 def printer():
-    global tag, attr
     for tag, attr in xmlTagsAttr.items():
         if tag != "":
             if len(attr) > 0:
-                results_union = set().union(*attr)
-                for a in results_union:
-                    mapper = '{}    string      `xml:"{}{}, attr"`'.format(tag.split('>')[-1], tag, a)
-                    print(mapper)
+                for a in attr:
+                    mapper = '\t{}\tstring\t`xml:"{}>{},attr"`\n'.format(tag.split('>')[-1].capitalize(), tag, a)
+                    file.write(mapper)
             else:
-                mapper = '{}    string      `xml:"{}"`'.format(tag.split('>')[-1], tag)
-                print(mapper)
+                mapper = '\t{}\tstring\t`xml:"{}"`\n'.format(tag.split('>')[-1].capitalize(), tag)
+                file.write(mapper)
 
 
 r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -78,6 +76,12 @@ with open('data.xml', 'w') as f:
 element = etree.parse('data.xml')
 finder()
 processor()
-printer()
+with open('mapping.go', 'a') as file:
+    file.write('type CRMAd struct {\n')
+    printer()
+    file.write('}\n')
+    file.close()
 
 os.remove('data.xml')
+
+print("file generated with name: ", file.name)
